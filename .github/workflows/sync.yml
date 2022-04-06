@@ -13,30 +13,39 @@ jobs:
     steps:
     # REQUIRED step
     # Step 1: run a standard checkout action, provided by github
-    - name: Checkout target repo
-      uses: actions/checkout@v2
-      with:
-        # optional: set the branch to checkout,
-        # sync action checks out your 'target_sync_branch' anyway
-        ref:  master
-        # REQUIRED if your upstream repo is private (see wiki)
-        persist-credentials: false
+   # - name: Checkout
+   #   uses: actions/checkout@v3.0.0      
+   #   with:
+        # Repository name with owner. For example, actions/checkout
+        # Default: ${{ github.repository }}
+   #     repository: 'CVEProject/cvelist'
+
+        # The branch, tag or SHA to checkout. When checking out the repository that
+        # triggered a workflow, this defaults to the reference or SHA for that event.
+        # Otherwise, uses the default branch.
+    #    ref: 'master'
 
     # REQUIRED step
     # Step 2: run the sync action
-    - name: Sync upstream changes
+    - name: Upstream Sync
       id: sync
-      uses: aormsby/Fork-Sync-With-Upstream-action@v3.0
+      uses: aormsby/Fork-Sync-With-Upstream-action@v3.2
       with:
-        target_sync_branch: master
-        # REQUIRED 'target_repo_token' exactly like this!
+        # Branch receiving updates from the upstream repo, e.g. => main, master, prod
+        target_sync_branch: 'master'
+        # Input for passing secrets.GITHUB_TOKEN when disabling persistent auth in the checkout step
         target_repo_token: ${{ secrets.GITHUB_TOKEN }}
-        upstream_sync_branch: master
-        upstream_sync_repo: aormsby/Fork-Sync-With-Upstream-action
-        upstream_repo_access_token: ${{ secrets.UPSTREAM_REPO_SECRET }}
-
-        # Set test_mode true to run tests instead of the true action!!
-        test_mode: true
+        # Upstream repository, e.g. => aormsby/Fork-Sync-With-Upstream-action
+        upstream_sync_repo: 'CVEProject/cvelist'
+        # Branch to sync from, e.g. => main, master, dev
+        upstream_sync_branch: 'master'
+        # If set to 'true', runs verification test on all inputs and any testable actions that use them
+        test_mode: false
+        # Domain name to be used in upstream repo URL.
+        host_domain: 'github.com'
+        # Length of time used when fetching shallow repo data, should match how often you perform a sync
+        shallow_since: '1 month ago'
+        
 
     # Step 3: Display a sample message based on the sync output var 'has_new_commits'
     - name: New commits found
